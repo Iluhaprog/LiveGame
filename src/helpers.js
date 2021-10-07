@@ -70,6 +70,7 @@ export const ButtonTypes = {
 	NEXT_GEN: "Next",
 	PREV_GEN: "Prev",
 	CLEAR: "Clear",
+	RANDOM: "Random",
 };
 
 export const Button = ({ parent, inner, styles }) => {

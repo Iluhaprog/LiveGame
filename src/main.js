@@ -68,8 +68,9 @@ class Universe {
 		};
 	}
 
-	initCells() {
+	initCells(random = 0) {
 		let i = 0;
+		this.cells = [];
 		for (let row = 0; row < this.cellsNumbers.Y; row += 1) {
 			this.indexMatrix.push([]);
 			for (let col = 0; col < this.cellsNumbers.X; col += 1) {
@@ -78,6 +79,7 @@ class Universe {
 						x: col * this.cellSizes.width,
 						y: row * this.cellSizes.height,
 						sizes: this.cellSizes,
+						isAlive: random ? Math.random() > 1 - random : false,
 					})
 				);
 				this.indexMatrix[row].push(i);
@@ -191,6 +193,7 @@ class Game {
 		width,
 		height,
 		cellsNumbers,
+		randomChance = 0.5,
 		menu,
 		defaultRule,
 		delay = 100,
@@ -236,6 +239,10 @@ class Game {
 			universe.clear();
 			universe.draw();
 		});
+		menu.buttons[ButtonTypes.RANDOM].addEventListener("click", () => {
+			universe.initCells(randomChance);
+			universe.draw();
+		});
 	}
 }
 
@@ -261,7 +268,7 @@ const init = ({ gameSetup }) => {
 	document.body.appendChild(menuWrapper);
 
 	const form = new Form({
-		style: FromStyle,
+		style: VisibleNone,
 		elementsSetup: [
 			{
 				label: "Width: ",
@@ -304,6 +311,14 @@ const init = ({ gameSetup }) => {
 				defaultValue: gameSetup.delay,
 			},
 			{
+				label: "Random chance: ",
+				name: "chance",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.randomChance,
+			},
+			{
 				type: InputTypes.SUBMIT,
 				style: SubmitStyle,
 				defaultValue: "Save",
@@ -317,6 +332,7 @@ const init = ({ gameSetup }) => {
 					X: +values.cellsByX,
 					Y: +values.cellsByY,
 				},
+				randomChance: +values.chance,
 				delay: +values.delay,
 			};
 			menuWrapper.innerHTML = "";
@@ -360,6 +376,7 @@ const gameSetup = {
 	width: 500,
 	height: 500,
 	delay: 200,
+	randomChance: 0.5,
 	cellsNumbers: { X: 50, Y: 50 },
 };
 
