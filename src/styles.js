@@ -30,6 +30,7 @@ export const defaultButton = ({ borderColor, backgroundColor }) => ({
 	border: `2px solid ${borderColor}`,
 	margin: "5px",
 	cursor: "pointer",
+	fontFamily: "'Cabin', sans-serif",
 });
 
 export const ButtonStyle = styles(
@@ -44,4 +45,54 @@ export const TextStyle = styles({
 	textTransform: "uppercase",
 	padding: "5px",
 	margin: "0",
+});
+
+export const FormInputStyles = styles({
+	padding: "10px",
+	fontSize: "16px",
+	fontFamily: "'Cabin', sans-serif",
+	borderRadius: "5px",
+	border: `2px solid ${Colors.BORDERS}`,
+	margin: "10px 0",
+});
+
+export const WrapperStyle = styles({
+	display: "flex",
+	flexDirection: "column",
+});
+
+export const LabelStyle = styles({
+	color: Colors.SECOND,
+	fontFamily: "'Cabin', sans-serif",
+	fontSize: "16px",
+	marginTop: "10px",
+});
+
+export const SubmitStyle = styles({
+	...defaultButton({
+		borderColor: Colors.BORDERS,
+		backgroundColor: Colors.UNIVERSE,
+	}),
+	maxWidth: "200px",
+	width: "100%",
+	margin: "0",
+	marginTop: "10px",
+});
+
+export const FromStyle = styles({
+	position: "absolute",
+	display: "grid",
+	placeItems: "center",
+	backgroundColor: Colors.MAIN,
+	top: 0,
+	left: 0,
+	bottom: 0,
+	right: 0,
+	padding: "60px",
+});
+
+export const VisibleNone = styles({
+	visibility: "hidden",
+	height: "0",
+	overflow: "hidden",
 });

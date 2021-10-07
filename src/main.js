@@ -14,9 +14,16 @@ import {
 	Colors,
 	ButtonStyle,
 	TextStyle,
+	FormInputStyles,
+	WrapperStyle,
+	LabelStyle,
+	SubmitStyle,
+	FromStyle,
+	VisibleNone,
 } from "./styles.js";
 import { FlatIndexDoesNotExistsError } from "./errors.js";
 import { defaultRule } from "./rules.js";
+import { Form, InputTypes } from "./form.js";
 
 class Cell {
 	constructor({ x, y, sizes, isAlive = false }) {
@@ -227,7 +234,6 @@ class Game {
 		});
 		menu.buttons[ButtonTypes.CLEAR].addEventListener("click", () => {
 			universe.clear();
-			console.log("click");
 			universe.draw();
 		});
 	}
@@ -247,24 +253,114 @@ class Menu {
 	}
 }
 
-const init = () => {
+const init = ({ gameSetup }) => {
 	const canvasWrapper = document.createElement("div");
 	const menuWrapper = document.createElement("div");
 
 	document.body.appendChild(canvasWrapper);
 	document.body.appendChild(menuWrapper);
 
+	const form = new Form({
+		style: FromStyle,
+		elementsSetup: [
+			{
+				label: "Width: ",
+				name: "width",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.width,
+			},
+			{
+				label: "Height: ",
+				name: "height",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.height,
+			},
+			{
+				label: "Cells by X: ",
+				name: "cellsByX",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.cellsNumbers.X,
+			},
+			{
+				label: "Cells by Y: ",
+				name: "cellsByY",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.cellsNumbers.Y,
+			},
+			{
+				label: "Delay: ",
+				name: "delay",
+				style: FormInputStyles,
+				wrapperStyle: WrapperStyle,
+				labelStyle: LabelStyle,
+				defaultValue: gameSetup.delay,
+			},
+			{
+				type: InputTypes.SUBMIT,
+				style: SubmitStyle,
+				defaultValue: "Save",
+			},
+		],
+		onSubmit: (values) => {
+			const gameSetup = {
+				width: +values.width,
+				height: +values.height,
+				cellsNumbers: {
+					X: +values.cellsByX,
+					Y: +values.cellsByY,
+				},
+				delay: +values.delay,
+			};
+			menuWrapper.innerHTML = "";
+			canvasWrapper.innerHTML = "";
+			Game.main({
+				parent: canvasWrapper,
+				...gameSetup,
+				menu: Menu.gen(menuWrapper),
+				rule: defaultRule,
+			});
+			Button({
+				parent: menuWrapper,
+				inner: ButtonText({ inner: "Settings", styles: TextStyle }),
+				styles: ButtonStyle,
+			}).addEventListener("click", () => form.changeStyle(FromStyle));
+		},
+		onClose: () => {
+			form.changeStyle(VisibleNone);
+		},
+	});
+
+	document.body.appendChild(form.box);
+
 	Game.main({
 		parent: canvasWrapper,
-		width: 500,
-		height: 500,
-		delay: 200,
-		cellsNumbers: { X: 50, Y: 50 },
+		...gameSetup,
 		menu: Menu.gen(menuWrapper),
 		rule: defaultRule,
 	});
 
+	Button({
+		parent: menuWrapper,
+		inner: ButtonText({ inner: "Settings", styles: TextStyle }),
+		styles: ButtonStyle,
+	}).addEventListener("click", () => form.changeStyle(FromStyle));
+
 	parentStyle.to(document.body);
 };
 
-init();
+const gameSetup = {
+	width: 500,
+	height: 500,
+	delay: 200,
+	cellsNumbers: { X: 50, Y: 50 },
+};
+
+init({ gameSetup });

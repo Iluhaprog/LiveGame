@@ -32,6 +32,17 @@ export const styles = (styles) => {
 				element.style[styleName] = styles[styleName];
 			});
 		},
+		removeFrom(el) {
+			let element;
+			if (typeof el === "string") {
+				element = document.getElementById(el);
+			} else if (el instanceof HTMLElement) {
+				element = el;
+			} else {
+				throw new UnsupportedElementError(el);
+			}
+			element.removeAttribute("style");
+		},
 	};
 };
 
