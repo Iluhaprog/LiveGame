@@ -96,3 +96,14 @@ export const VisibleNone = styles({
 	height: "0",
 	overflow: "hidden",
 });
+
+export const GenText = styles({
+	fontFamily: "'Cabin', sans-serif",
+	fontSize: "24px",
+	color: Colors.UNIVERSE,
+	position: "absolute",
+	top: "10px",
+	left: "50%",
+	transform: "translateX(-400px)",
+	width: "300px",
+});

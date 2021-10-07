@@ -20,6 +20,7 @@ import {
 	SubmitStyle,
 	FromStyle,
 	VisibleNone,
+	GenText,
 } from "./styles.js";
 import { FlatIndexDoesNotExistsError } from "./errors.js";
 import { defaultRule } from "./rules.js";
@@ -209,6 +210,13 @@ class Game {
 			rule: defaultRule,
 		});
 
+		const genText = ButtonText({
+			inner: `GEN: ${universe.generation}`,
+			styles: GenText,
+		});
+
+		parent.appendChild(genText);
+
 		universe.draw();
 
 		addClick(({ x, y }) => {
@@ -220,6 +228,7 @@ class Game {
 
 		menu.buttons[ButtonTypes.RUN].addEventListener("click", () => {
 			intervalID = setInterval(() => {
+				genText.innerText = `GEN: ${universe.generation}`;
 				universe.calcNextGen();
 				universe.draw();
 			}, delay);
@@ -229,14 +238,17 @@ class Game {
 		});
 		menu.buttons[ButtonTypes.NEXT_GEN].addEventListener("click", () => {
 			universe.calcNextGen();
+			genText.innerText = `GEN: ${universe.generation}`;
 			universe.draw();
 		});
 		menu.buttons[ButtonTypes.PREV_GEN].addEventListener("click", () => {
 			universe.calcPrevGen();
+			genText.innerText = `GEN: ${universe.generation}`;
 			universe.draw();
 		});
 		menu.buttons[ButtonTypes.CLEAR].addEventListener("click", () => {
 			universe.clear();
+			genText.innerText = `GEN: ${universe.generation}`;
 			universe.draw();
 		});
 		menu.buttons[ButtonTypes.RANDOM].addEventListener("click", () => {
