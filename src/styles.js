@@ -20,6 +20,7 @@ export const universeStyle = styles({
 	backgroundColor: Colors.UNIVERSE,
 	borderRadius: "10px",
 	border: `2px solid ${Colors.BORDERS}`,
+	marginTop: "50px",
 });
 
 export const defaultButton = ({ borderColor, backgroundColor }) => ({
@@ -102,8 +103,9 @@ export const GenText = styles({
 	fontSize: "24px",
 	color: Colors.UNIVERSE,
 	position: "absolute",
-	top: "10px",
+	top: "0px",
 	left: "50%",
-	transform: "translateX(-400px)",
+	marginLeft: "-150px",
+	textAlign: "center",
 	width: "300px",
 });

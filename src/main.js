@@ -276,6 +276,21 @@ const init = ({ gameSetup }) => {
 	const canvasWrapper = document.createElement("div");
 	const menuWrapper = document.createElement("div");
 
+	const initGame = (gameSetup) => {
+		Game.main({
+			parent: canvasWrapper,
+			...gameSetup,
+			menu: Menu.gen(menuWrapper),
+			rule: defaultRule,
+		});
+
+		Button({
+			parent: menuWrapper,
+			inner: ButtonText({ inner: "Settings", styles: TextStyle }),
+			styles: ButtonStyle,
+		}).addEventListener("click", () => form.changeStyle(FromStyle));
+	};
+
 	document.body.appendChild(canvasWrapper);
 	document.body.appendChild(menuWrapper);
 
@@ -349,17 +364,7 @@ const init = ({ gameSetup }) => {
 			};
 			menuWrapper.innerHTML = "";
 			canvasWrapper.innerHTML = "";
-			Game.main({
-				parent: canvasWrapper,
-				...gameSetup,
-				menu: Menu.gen(menuWrapper),
-				rule: defaultRule,
-			});
-			Button({
-				parent: menuWrapper,
-				inner: ButtonText({ inner: "Settings", styles: TextStyle }),
-				styles: ButtonStyle,
-			}).addEventListener("click", () => form.changeStyle(FromStyle));
+			initGame(gameSetup);
 		},
 		onClose: () => {
 			form.changeStyle(VisibleNone);
@@ -368,18 +373,7 @@ const init = ({ gameSetup }) => {
 
 	document.body.appendChild(form.box);
 
-	Game.main({
-		parent: canvasWrapper,
-		...gameSetup,
-		menu: Menu.gen(menuWrapper),
-		rule: defaultRule,
-	});
-
-	Button({
-		parent: menuWrapper,
-		inner: ButtonText({ inner: "Settings", styles: TextStyle }),
-		styles: ButtonStyle,
-	}).addEventListener("click", () => form.changeStyle(FromStyle));
+	initGame(gameSetup);
 
 	parentStyle.to(document.body);
 };
