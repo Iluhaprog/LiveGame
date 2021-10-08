@@ -71,6 +71,7 @@ export const ButtonTypes = {
 	PREV_GEN: "Prev",
 	CLEAR: "Clear",
 	RANDOM: "Random",
+	SAVE: "Save",
 };
 
 export const Button = ({ parent, inner, styles }) => {

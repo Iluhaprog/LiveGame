@@ -14,17 +14,14 @@ import {
 	Colors,
 	ButtonStyle,
 	TextStyle,
-	FormInputStyles,
-	WrapperStyle,
-	LabelStyle,
-	SubmitStyle,
 	FromStyle,
-	VisibleNone,
 	GenText,
 } from "./styles.js";
 import { FlatIndexDoesNotExistsError } from "./errors.js";
 import { defaultRule } from "./rules.js";
-import { Form, InputTypes } from "./form.js";
+import { buildSettingForm } from "./forms/settings.js";
+import { buildLoaderForm, getUniverses } from "./forms/loader.js";
+import { UNIVERSES } from "./locations.js";
 
 class Cell {
 	constructor({ x, y, sizes, isAlive = false }) {
@@ -47,7 +44,14 @@ class Cell {
 }
 
 class Universe {
-	constructor({ width, height, cellsNumbers, context, rule = defaultRule }) {
+	constructor({
+		width,
+		height,
+		cellsNumbers,
+		context,
+		rule = defaultRule,
+		values,
+	}) {
 		this.rule = rule;
 		this.generation = 0;
 		this.generations = [];
@@ -59,7 +63,7 @@ class Universe {
 
 		this.indexMatrix = [];
 		this.calcCellsSizes();
-		this.initCells();
+		this.initCells({ values });
 	}
 
 	calcCellsSizes() {
@@ -69,7 +73,7 @@ class Universe {
 		};
 	}
 
-	initCells(random = 0) {
+	initCells({ randomChance = 0, values }) {
 		let i = 0;
 		this.cells = [];
 		for (let row = 0; row < this.cellsNumbers.Y; row += 1) {
@@ -80,7 +84,11 @@ class Universe {
 						x: col * this.cellSizes.width,
 						y: row * this.cellSizes.height,
 						sizes: this.cellSizes,
-						isAlive: random ? Math.random() > 1 - random : false,
+						isAlive: values
+							? !!values[i]
+							: randomChance
+							? Math.random() > 1 - randomChance
+							: false,
 					})
 				);
 				this.indexMatrix[row].push(i);
@@ -198,6 +206,7 @@ class Game {
 		menu,
 		defaultRule,
 		delay = 100,
+		values,
 	}) {
 		const { canvas, context } = getCanvas({ parent, width, height });
 		universeStyle.to(canvas);
@@ -208,6 +217,7 @@ class Game {
 			cellsNumbers,
 			context,
 			rule: defaultRule,
+			values,
 		});
 
 		const genText = ButtonText({
@@ -252,9 +262,26 @@ class Game {
 			universe.draw();
 		});
 		menu.buttons[ButtonTypes.RANDOM].addEventListener("click", () => {
-			universe.initCells(randomChance);
+			universe.initCells({ randomChance });
 			universe.draw();
 		});
+		menu.buttons[ButtonTypes.SAVE].addEventListener("click", () => {
+			const key = prompt("Name of universe: ");
+			const values = JSON.parse(localStorage.getItem(UNIVERSES)) || {};
+			values[key] = {
+				settings: {
+					width,
+					height,
+					delay,
+					cellsNumbers,
+					randomChance,
+				},
+				universe: universe.cells.map((cell) => +cell.isAlive),
+			};
+			localStorage.setItem(UNIVERSES, JSON.stringify(values));
+		});
+
+		return universe;
 	}
 }
 
@@ -276,114 +303,82 @@ const init = ({ gameSetup }) => {
 	const canvasWrapper = document.createElement("div");
 	const menuWrapper = document.createElement("div");
 
-	const initGame = (gameSetup) => {
+	const initGame = ({ gameSetup, values }) => {
 		Game.main({
 			parent: canvasWrapper,
 			...gameSetup,
 			menu: Menu.gen(menuWrapper),
 			rule: defaultRule,
+			values,
 		});
+
+		const form = buildSettingForm({
+			gameSetup,
+			onSubmit: (values) => {
+				const gameSetup = {
+					width: +values.width,
+					height: +values.height,
+					cellsNumbers: {
+						X: +values.cellsByX,
+						Y: +values.cellsByY,
+					},
+					randomChance: +values.chance,
+					delay: +values.delay,
+				};
+				menuWrapper.innerHTML = "";
+				canvasWrapper.innerHTML = "";
+				initGame({ gameSetup });
+			},
+		});
+
+		const loadUniverse = (values) => {
+			menuWrapper.innerHTML = "";
+			canvasWrapper.innerHTML = "";
+			initGame({
+				gameSetup: values.settings,
+				values: values.universe,
+			});
+		};
+
+		const loaderForm = buildLoaderForm({
+			onLoadFromLocalStorage: loadUniverse,
+		});
+
+		document.body.appendChild(loaderForm.box);
+		document.body.appendChild(form.box);
 
 		Button({
 			parent: menuWrapper,
 			inner: ButtonText({ inner: "Settings", styles: TextStyle }),
 			styles: ButtonStyle,
 		}).addEventListener("click", () => form.changeStyle(FromStyle));
+
+		Button({
+			parent: menuWrapper,
+			inner: ButtonText({ inner: "Load", styles: TextStyle }),
+			styles: ButtonStyle,
+		}).addEventListener("click", () => {
+			loaderForm.setElementsSetup(getUniverses(loadUniverse));
+			document.body.removeChild(loaderForm.box);
+			document.body.appendChild(loaderForm.box);
+			loaderForm.changeStyle(FromStyle);
+		});
 	};
 
 	document.body.appendChild(canvasWrapper);
 	document.body.appendChild(menuWrapper);
 
-	const form = new Form({
-		style: VisibleNone,
-		elementsSetup: [
-			{
-				label: "Width: ",
-				name: "width",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.width,
-			},
-			{
-				label: "Height: ",
-				name: "height",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.height,
-			},
-			{
-				label: "Cells by X: ",
-				name: "cellsByX",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.cellsNumbers.X,
-			},
-			{
-				label: "Cells by Y: ",
-				name: "cellsByY",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.cellsNumbers.Y,
-			},
-			{
-				label: "Delay: ",
-				name: "delay",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.delay,
-			},
-			{
-				label: "Random chance: ",
-				name: "chance",
-				style: FormInputStyles,
-				wrapperStyle: WrapperStyle,
-				labelStyle: LabelStyle,
-				defaultValue: gameSetup.randomChance,
-			},
-			{
-				type: InputTypes.SUBMIT,
-				style: SubmitStyle,
-				defaultValue: "Save",
-			},
-		],
-		onSubmit: (values) => {
-			const gameSetup = {
-				width: +values.width,
-				height: +values.height,
-				cellsNumbers: {
-					X: +values.cellsByX,
-					Y: +values.cellsByY,
-				},
-				randomChance: +values.chance,
-				delay: +values.delay,
-			};
-			menuWrapper.innerHTML = "";
-			canvasWrapper.innerHTML = "";
-			initGame(gameSetup);
-		},
-		onClose: () => {
-			form.changeStyle(VisibleNone);
-		},
-	});
-
-	document.body.appendChild(form.box);
-
-	initGame(gameSetup);
+	initGame({ gameSetup });
 
 	parentStyle.to(document.body);
 };
 
 const gameSetup = {
-	width: 500,
+	width: 1000,
 	height: 500,
 	delay: 200,
 	randomChance: 0.5,
-	cellsNumbers: { X: 50, Y: 50 },
+	cellsNumbers: { X: 100, Y: 50 },
 };
 
 init({ gameSetup });

@@ -49,9 +49,9 @@ export class Form {
 	constructor({ elementsSetup = [], onSubmit = () => {}, style, onClose }) {
 		this.style = style;
 		this.box = document.createElement("form");
-
-		const inputsWrapper = document.createElement("div");
-		this.box.appendChild(inputsWrapper);
+		this.onClose = onClose;
+		this.inputsWrapper = document.createElement("div");
+		this.box.appendChild(this.inputsWrapper);
 
 		if (style) style.to(this.box);
 		this.box.onsubmit = (event) => {
@@ -59,16 +59,21 @@ export class Form {
 			onSubmit(this.getValues());
 		};
 
-		elementsSetup.forEach((elementSetup) => {
-			inputsWrapper.appendChild(Input(elementSetup));
-		});
+		this.setElementsSetup(elementsSetup);
+	}
 
-		inputsWrapper.appendChild(
+	setElementsSetup(setup) {
+		this.elementsSetup = setup;
+		this.inputsWrapper.innerHTML = "";
+		this.elementsSetup.forEach((elementSetup) => {
+			this.inputsWrapper.appendChild(Input(elementSetup));
+		});
+		this.inputsWrapper.appendChild(
 			Input({
 				defaultValue: "Close",
 				type: InputTypes.BUTTON,
 				style: SubmitStyle,
-				onClick: onClose,
+				onClick: () => this.onClose(this),
 			})
 		);
 	}
